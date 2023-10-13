@@ -10,6 +10,7 @@
   </head>
   <body>
     <div id="viewAll"></div>
+    <div id="newCardFormContainer"></div>
     <div id="cardList"></div>
     <div id="cardContainter"></div>
   </body>
@@ -23,17 +24,16 @@
       $("#viewAll").append(
         $("<button></button>").text("Hide").on("click", hideAllCards)
       );
+      $("#newCardForm").show();
 
-      $("#cardList").append($newCardForm);
-
-      flashCards.forEach((card, i) => {
+      flashCards.forEach((card, index) => {
         const $question = $("<div></div>").text(card.q);
         const $answear = $("<div></div>").text(card.a);
         const $delete = $("<button></button>")
           .text("Delete")
           .addClass("deleteButton")
           .on("click", () => {
-            flashCards.splice(i, 1);
+            flashCards.splice(index, 1);
             saveCards();
             renderAllCards();
           });
@@ -56,6 +56,7 @@
           .text("View all flashcards")
           .on("click", renderAllCards)
       );
+      $("#newCardForm").hide();
     };
 
     const renderCard = () => {
@@ -87,6 +88,28 @@
       $("#cardContainter").append($card.append($question, $turnAroundButton));
     };
 
+    const onNewCardSubmit = (e) => {
+      e.preventDefault();
+      const $questionInput = $("#questionInput");
+      const $answearInput = $("#answearInput");
+
+      const question = $questionInput.val();
+      const answear = $answearInput.val();
+
+      console.log("submit");
+
+      if (question && answear) {
+        flashCards.push({ q: question, a: answear });
+        console.log(question, answear);
+        $questionInput.val("");
+        $answearInput.val("");
+        saveCards();
+        renderAllCards();
+      }
+    };
+
+    console.log("a ok");
+
     const $questionInput = $("<input></input>")
       .attr("id", "questionInput")
       .attr("placeholder", "question")
@@ -103,28 +126,15 @@
 
     const $newCardForm = $("<form></form>")
       .attr("id", "newCardForm")
-      .on("submit", (e) => {
-        e.preventDefault();
-        const $questionInput = $("#questionInput");
-        const $answearInput = $("#answearInput");
-
-        const question = $questionInput.val();
-        const answear = $answearInput.val();
-
-        if (question && answear) {
-          flashCards.push({ q: question, a: answear });
-          saveCards();
-          $questionInput.val("");
-          $answearInput.val("");
-          renderAllCards();
-        }
-      })
       .append(
         $("<h3></h3>").text("New flashcard:"),
         $questionInput,
         $answearInput,
         $submitButton
       );
+    $newCardForm.submit(onNewCardSubmit);
+    $($newCardForm).appendTo("#newCardFormContainer");
+    $("#newCardForm").hide();
 
     $("#viewAll").append(
       $("<button></button>").text("View all").on("click", renderAllCards)
