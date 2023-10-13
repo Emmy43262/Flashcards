@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Flashcards</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  </head>
+  <body>
+    <div id="viewAll"></div>
+    <div id="cardList"></div>
+    <div id="cardContainter"></div>
+  </body>
+
+  <script>
+    let flashCards = [];
+
+    const renderAllCards = () => {
+      $("#cardList").empty();
+      $("#viewAll").empty();
+      $("#viewAll").append(
+        $("<button></button>").text("Hide").on("click", hideAllCards)
+      );
+
+      $("#cardList").append($newCardForm);
+
+      flashCards.forEach((card, i) => {
+        const $question = $("<div></div>").text(card.q);
+        const $answear = $("<div></div>").text(card.a);
+        const $delete = $("<button></button>")
+          .text("Delete")
+          .addClass("deleteButton")
+          .on("click", () => {
+            flashCards.splice(i, 1);
+            saveCards();
+            renderAllCards();
+          });
+        const container = $("<div></div>")
+          .addClass("cardEntry")
+          .append($question, $answear, $delete);
+        $("#cardList").append(container);
+      });
+
+      if (flashCards.length === 0) {
+        $("#cardList").append($("<p></p>").text("No cards to show"));
+      }
+    };
+
+    const hideAllCards = () => {
+      $("#cardList").empty();
+      $("#viewAll").empty();
+      $("#viewAll").append(
+        $("<button></button>")
+          .text("View all flashcards")
+          .on("click", renderAllCards)
+      );
+    };
+
+    const renderCard = () => {
+      $("#cardContainter").empty();
+
+      const card = flashCards[Math.floor(Math.random() * flashCards.length)];
+
+      const $card = $("<div></div>").addClass("card");
+
+      const $question = $("<div></div>")
+        .addClass("textContainer")
+        .append($("<p></p>").text(card.q));
+
+      const $answear = $("<div></div>")
+        .addClass("textContainer")
+        .append($("<p></p>").text(card.a));
+
+      const $nextCardButton = $("<button></button>")
+        .text("Next card")
+        .on("click", renderCard);
+
+      const $turnAroundButton = $("<button></button>")
+        .text("Turn around")
+        .on("click", () => {
+          $card.empty();
+          $card.append($answear, $nextCardButton);
+        });
+
+      $("#cardContainter").append($card.append($question, $turnAroundButton));
+    };
+
+    const $questionInput = $("<input></input>")
+      .attr("id", "questionInput")
+      .attr("placeholder", "question")
+      .addClass("input");
+    const $answearInput = $("<input></input>")
+      .attr("id", "answearInput")
+      .attr("placeholder", "answear")
+      .addClass("input");
+    const $submitButton = $("<button></button>")
+      .text("Submit")
+      .attr("type", "submit")
+      .attr("form", "newCardForm")
+      .attr("type", "submit");
+
+    const $newCardForm = $("<form></form>")
+      .attr("id", "newCardForm")
+      .on("submit", (e) => {
+        e.preventDefault();
+        const $questionInput = $("#questionInput");
+        const $answearInput = $("#answearInput");
+
+        const question = $questionInput.val();
+        const answear = $answearInput.val();
+
+        if (question && answear) {
+          flashCards.push({ q: question, a: answear });
+          saveCards();
+          $questionInput.val("");
+          $answearInput.val("");
+          renderAllCards();
+        }
+      })
+      .append(
+        $("<h3></h3>").text("New flashcard:"),
+        $questionInput,
+        $answearInput,
+        $submitButton
+      );
+
+    $("#viewAll").append(
+      $("<button></button>").text("View all").on("click", renderAllCards)
+    );
+
+    const saveCards = () => {
+      localStorage.setItem("flashCards", JSON.stringify(flashCards));
+    };
+    const loadCards = () => {
+      const cards = JSON.parse(localStorage.getItem("flashCards"));
+      if (cards) {
+        flashCards = cards;
+      }
+    };
+
+    loadCards();
+    renderCard();
+  </script>
+
+  <style>
+    .cardEntry {
+      border: 1px solid black;
+      margin: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      width: 200px;
+    }
+
+    .deleteButton {
+      background-color: red;
+      color: white;
+      border-radius: 4px;
+      border: none;
+      padding: 8px;
+      font-size: 14px;
+      text-align: center;
+      width: 64px;
+      font-weight: 600;
+    }
+
+    .card {
+      border: 1px solid black;
+      margin: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 200px;
+      height: 250px;
+      text-align: center;
+      margin-top: 64px;
+    }
+
+    .card > .textContainer > p {
+      margin: 0;
+      padding-top: 32px;
+      height: 70px;
+    }
+
+    .card > button {
+      background-color: green;
+      color: white;
+      border-radius: 4px;
+      border: none;
+      padding: 8px;
+      font-size: 14px;
+      text-align: center;
+      width: 100px;
+      font-weight: 600;
+
+      position: relative;
+      left: 50%;
+      transform: translate(-50%, 0);
+    }
+
+    #newCardForm {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 200px;
+      margin-left: 8px;
+      margin-top: 64px;
+      margin-bottom: 16px;
+    }
+
+    #newCardForm > input {
+      border: 1px solid black;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+    #newCardForm > button {
+      background-color: green;
+      color: white;
+      border-radius: 4px;
+      border: none;
+      padding: 8px;
+      font-size: 14px;
+      text-align: center;
+      width: 64px;
+      font-weight: 600;
+
+      position: relative;
+      left: 50%;
+      transform: translate(-50%, 0);
+    }
+
+    #viewAll > button {
+      background-color: green;
+      color: white;
+      border-radius: 4px;
+      border: none;
+      padding: 8px;
+      margin-left: 10px;
+      font-size: 14px;
+      text-align: center;
+      font-weight: 600;
+      position: absolute;
+      left: 8px;
+      top: 8px;
+    }
+  </style>
+</html>
